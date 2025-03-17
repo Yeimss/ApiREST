@@ -56,7 +56,7 @@ namespace WebApi.Controllers
             TblUsuario? usuario = await _dbContext.TblUsuarios
                 .Where(user => 
                 user.Correo!.ToLower().Equals(login.Correo.ToLower()) 
-                && user.Clave!.Equals(login.Clave))
+                && user.Clave!.Equals(_utils.encriptarSHA256(login.Clave)))
                 .FirstOrDefaultAsync();
             if (usuario == null)    
             {
