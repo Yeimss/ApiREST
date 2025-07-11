@@ -3,7 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using WebApi.Models;
+using WebApi.Models.Context;
 
 namespace WebApi.Custom
 {
@@ -30,17 +30,17 @@ namespace WebApi.Custom
         {
             var userClaims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.IdUsuario.ToString()),
-                new Claim(ClaimTypes.Email, user.Correo!),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Email, user.Email!),
+                new Claim(ClaimTypes.Role, user.IdRol.ToString()!),
             };
 
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:key"]!));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature);
 
-            //crear detalle del token
             var jwtConfig = new JwtSecurityToken(
                 claims: userClaims,
-                expires: DateTime.UtcNow.AddMinutes(5),
+                expires: DateTime.UtcNow.AddHours(1),
                 signingCredentials: credentials
                 );
 

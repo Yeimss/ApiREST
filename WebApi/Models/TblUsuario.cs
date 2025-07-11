@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace WebApi.Models;
-
-public partial class TblUsuario
+﻿namespace WebApi.Models
 {
-    public int IdUsuario { get; set; }
-
-    public string? Nombre { get; set; }
-
-    public string? Correo { get; set; }
-
-    public string? Clave { get; set; }
+    public class TblUsuario
+    {
+        public int IdUsuario { get;set ; }
+        public string Nombre { get; set; }
+        public string Correo { get; set; }
+        public string Clave { get; set; }
+    }
 }

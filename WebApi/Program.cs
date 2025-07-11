@@ -4,21 +4,24 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using WebApi.Custom;
 using WebApi.Models;
+using WebApi.Models.Context;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<DbapiJwtContext>(options =>
+builder.Services.AddDbContext<dbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("cnxLocal"));
 });
 builder.Services.AddSingleton<Utils>();
+
+
+
 builder.Services.AddAuthentication(config =>
 {
     config.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

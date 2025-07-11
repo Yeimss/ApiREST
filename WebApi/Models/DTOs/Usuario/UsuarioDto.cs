@@ -2,6 +2,8 @@
 {
     public class UsuarioDto : LoginDto
     {
-        public string Nombre { get; set; }
+        public string name { get; set; }
+        public string lastName { get; set; }
+        public string nickName { get; set; }
     }
 }
