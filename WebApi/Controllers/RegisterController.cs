@@ -56,8 +56,10 @@ namespace WebApi.Controllers
                 var habitacionesReservadas = await _dbContext.TblReservas
                     .Where(r => 
                     (r.IdHabitacion == reserva.idHabitacion) 
-                    && ((r.FechaIngreso >= reserva.fechaIngreso && r.FechaIngreso <= reserva.fechaSalida) 
-                    || (r.FechaSalida >= reserva.fechaIngreso && r.FechaIngreso <= reserva.fechaSalida)))
+                    && (
+                        (r.FechaIngreso >= reserva.fechaIngreso && r.FechaIngreso <= reserva.fechaSalida) 
+                        || (r.FechaSalida >= reserva.fechaIngreso && r.FechaIngreso <= reserva.fechaSalida)
+                        ))
                     .ToListAsync();
 
                 if (habitacionesReservadas.Any())
@@ -104,5 +106,107 @@ namespace WebApi.Controllers
                 });
             }
         }
+        [HttpPut]
+        [Route("Update")]
+        public async Task<IActionResult> Update(ReservaDto reserva)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+                var habitacionesReservadas = await _dbContext.TblReservas
+                   .Where(r =>
+                   (r.IdHabitacion == reserva.idHabitacion)
+                   && (
+                       (r.FechaIngreso >= reserva.fechaIngreso && r.FechaIngreso <= reserva.fechaSalida)
+                       || (r.FechaSalida >= reserva.fechaIngreso && r.FechaIngreso <= reserva.fechaSalida)
+                       ))
+                   .ToListAsync();
+
+                if (habitacionesReservadas.Any())
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "La habitación ya está reservada",
+                        reservadaPorMi = habitacionesReservadas.Any(r => r.IdUser == userId),
+                        reservadaPorOtroUsuario = habitacionesReservadas.Any(r => r.IdUser != userId)
+                    });
+                }
+
+                var reservaAEditar = await _dbContext.TblReservas.FirstOrDefaultAsync (r => r.Id == reserva.id);
+                if (reservaAEditar != null)
+                {
+                    reservaAEditar.FechaIngreso = reserva.fechaIngreso;
+                    reservaAEditar.FechaSalida = reserva.fechaSalida;
+                    reservaAEditar.IdUser = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+                    reservaAEditar.IdHabitacion = reserva.idHabitacion;
+                    await _dbContext.SaveChangesAsync();
+
+                    return Ok(new
+                    {
+                        message = "Actualización realizada correctamente",
+                        success = true
+                    });
+                }
+                else
+                {
+                    return BadRequest(new
+                    {
+                        message = "No se encontró una reserva con ese identificador",
+                        success = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = "Ha ocurrido un error inesperado",
+                    errorMessagee = ex.Message,
+                    success = false
+                });
+            }
+        }
+        [HttpDelete]
+        [Route("Delete")]
+        public async Task<IActionResult> Delete(ReservaDto reserva)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+                var reservaAEliminar = await _dbContext.TblReservas.FirstOrDefaultAsync(r => r.Id == reserva.id && r.IdUser == userId);
+                if (reservaAEliminar != null)
+                {
+                    _dbContext.TblReservas.Remove(reservaAEliminar);
+                    await _dbContext.SaveChangesAsync();
+
+                    return Ok(new
+                    {
+                        message = "Reserva eliminada correctamente",
+                        success = true
+                    });
+                }
+                else
+                {
+                    return BadRequest(new
+                    {
+                        message = "No se encontró una reserva con ese identificador",
+                        success = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = "Ha ocurrido un error inesperado",
+                    errorMessagee = ex.Message,
+                    success = false
+                });
+            }
+        }
+
     }
 }
